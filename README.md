@@ -13,3 +13,4 @@ Also you would need [ChromeDriver](https://chromedriver.chromium.org/) and [Pyth
 - Put words.txt in the same directory as scrape.py.
 - A screenshot part will come later.
 - Put ChromeDriver in the same directory as scrape.py. 
+- You can edit words.txt to add words and to remove repeated words errors just but both words but with a "-" between them
