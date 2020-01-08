@@ -25,7 +25,7 @@ errors = 1
 
 #First parameter is the replacement, second parameter is your input string
 def remove(s):
-    chars = "qwertyuiopasdfghjklzxcvbnm'WERTYUIOPASDFGHJKLZXCVBNM \n"
+    chars = "qwertyuiopasdfghjklzxcvbnm'QWERTYUIOPASDFGHJKLZXCVBNM \n"
     txt = ""
     for letter in s:
         if letter in chars:
@@ -42,7 +42,44 @@ for i in range(len(words)):
 
 chrome_options = Options()  
 chrome_options.add_argument("--headless")
-chrome_options.add_argument("--mute-audio")
+default_video = False
+
+
+
+source = requests.get("https://www.youtube.com/feed/trending").text
+soup = BeautifulSoup(source, 'lxml')#.text.encode("utf-8")
+
+
+
+for content in soup.findAll('div', class_= "yt-lockup-content"):
+    
+    title = content.h3.a.text
+    print("#1 on trending is: " + title)
+    link = content.h3.a['href']
+    print("Link: https://www.youtube.com" + link)
+
+        
+
+    break
+link = ""
+while not (link.startswith("https://www.youtube.com/watch?v=")):
+    link = input("Insert youtube link: ")
+    if link == "":
+        link = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        default_video = True
+if not default_video:
+    chrome_options.add_argument("--mute-audio")
+amount = 3
+try:
+    amount = int(input("Amount of reloads to search: "))
+except ValueError:
+    amount = 3
+errors = 1
+try:
+    errors = int(input("Amount of errors to be displayed: "))
+except ValueError:
+    errors = 1
+
 
 with closing(Chrome(chrome_options=chrome_options)) as driver:
     wait = WebDriverWait(driver,50)
@@ -51,34 +88,7 @@ with closing(Chrome(chrome_options=chrome_options)) as driver:
         os.system("cls")
     else:
         os.system("clear")
-    source = requests.get("https://www.youtube.com/feed/trending").text
-    soup = BeautifulSoup(source, 'lxml')#.text.encode("utf-8")
 
-
-
-    for content in soup.findAll('div', class_= "yt-lockup-content"):
-        
-        title = content.h3.a.text
-        print("#1 on trending is: " + title)
-        link = content.h3.a['href']
-        print("Link: https://www.youtube.com" + link)
-
-            
-
-        break
-    link = ""
-    while not (link.startswith("https://www.youtube.com/watch?v=")):
-        link = input("Insert youtube link: ")
-    amount = 3
-    try:
-        amount = int(input("Amount of reloads to search: "))
-    except ValueError:
-        amount = 3
-    errors = 1
-    try:
-        errors = int(input("Amount of errors to be displayed: "))
-    except ValueError:
-        errors = 1
 
     req = Request(link, headers={'User-Agent': 'Mozilla/5.0'})
     webpage = urlopen(req).read()
@@ -87,9 +97,9 @@ with closing(Chrome(chrome_options=chrome_options)) as driver:
 
     soup = BeautifulSoup(webpage, 'html.parser')
     html = soup.prettify('utf-8')
-
-    for span in soup.findAll('span',attrs={'class': 'watch-title'}):
-        print("Reading from: " + span.text.strip())
+    if not default_video:
+        for span in soup.findAll('span',attrs={'class': 'watch-title'}):
+            print("Reading from: " + span.text.strip())
         
 
     
@@ -114,7 +124,6 @@ with closing(Chrome(chrome_options=chrome_options)) as driver:
         cs = []
         find = comment.text.replace("’", "'")
         find = find.replace(chr(10), "\n")
-        
         find = remove(find)
         for line in find.split("\n"):
             for i,word in enumerate(line.split(" ")):
@@ -147,10 +156,14 @@ with closing(Chrome(chrome_options=chrome_options)) as driver:
             for mistake in sorted(cs):
                 print(mistake)
             print(comment.text)
-            print("-------------------"
             mistakes += 1
+            print("-------------------")
+
+        
+    if mistakes == 0:
+        if errors == 1:
+            print("No comments with "+ str(errors) +" error found.")
+        else:
+            print("No comments with "+ str(errors) +" errors found.")
         
         #print(comment.text)
-
-    
-
